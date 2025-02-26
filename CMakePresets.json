@@ -1,0 +1,242 @@
+{
+  "version": 10,
+  "cmakeMinimumRequired": {
+    "major": 4,
+    "minor": 0,
+    "patch": 0
+  },
+  "$comment": "The Project CMakePresets.json file",
+  "include": [],
+  "configurePresets": [
+    {
+      "name": "windows-base",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang-cl",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+          "type": "FILEPATH"
+        },
+        "VCPKG_MANIFEST_MODE": "ON",
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
+      },
+      "toolset": "ClangCL",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": ["Windows"],
+          "autoFormat": true,
+          "intelliSenseMode": "windows-clang-x64"
+        }
+      }
+    },
+    {
+      "name": "win-debug-C",
+      "inherits": "windows-base",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "win-release-C",
+      "inherits": "windows-base",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "linux-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/install/${presetName}",
+      "environment": {
+        "VCPKG_ROOT": "$env{TOOLS_DIR}/vcpkg"
+      },
+      "cacheVariables": {
+        "CMAKE_SUPPRESS_DEVELOPER_WARNINGS": "ON",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_FLAGS": "-stdlib=libc++",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=lld -stdlib=libc++",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+          "type": "FILEPATH"
+        },
+        "VCPKG_MANIFEST_MODE": "ON",
+        "VCPKG_TARGET_TRIPLET": "x64-linux"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "lnx-debug-C",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "lnx-release-C",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "win-release-B",
+      "displayName": "WinRelB",
+      "configurePreset": "win-release-C"
+    },
+    {
+      "name": "win-debug-B",
+      "displayName": "WinDbgB",
+      "configurePreset": "win-debug-C"
+    },
+    {
+      "name": "lnx-release-B",
+      "displayName": "LnxRelB",
+      "configurePreset": "lnx-release-C"
+    },
+    {
+      "name": "lnx-debug-B",
+      "displayName": "LnxDbgB",
+      "configurePreset": "lnx-debug-C"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "win-release-T",
+      "configurePreset": "win-release-C",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true,
+        "verbosity": "verbose"
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "lnx-release-T",
+      "configurePreset": "lnx-release-C",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true,
+        "verbosity": "verbose"
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "win-config-build-test",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win-release-C"
+        },
+        {
+          "type": "build",
+          "name": "win-release-B"
+        },
+        {
+          "type": "test",
+          "name": "win-release-T"
+        }
+      ]
+    },
+    {
+      "name": "win-config-build-dbg",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win-debug-C"
+        },
+        {
+          "type": "build",
+          "name": "win-debug-B"
+        }
+      ]
+    },
+    {
+      "name": "win-config-build-rel",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win-release-C"
+        },
+        {
+          "type": "build",
+          "name": "win-release-B"
+        }
+      ]
+    },
+    {
+      "name": "lnx-config-build-test",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "lnx-release-C"
+        },
+        {
+          "type": "build",
+          "name": "lnx-release-B"
+        },
+        {
+          "type": "test",
+          "name": "lnx-release-T"
+        }
+      ]
+    },
+    {
+      "name": "lnx-config-build-dbg",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "lnx-debug-C"
+        },
+        {
+          "type": "build",
+          "name": "lnx-debug-B"
+        }
+      ]
+    },
+    {
+      "name": "lnx-config-build-rel",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "lnx-release-C"
+        },
+        {
+          "type": "build",
+          "name": "lnx-release-B"
+        }
+      ]
+    }
+  ]
+}
